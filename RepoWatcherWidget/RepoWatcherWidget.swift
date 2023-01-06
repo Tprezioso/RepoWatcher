@@ -9,23 +9,23 @@ import WidgetKit
 import SwiftUI
 
 struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date())
+    func placeholder(in context: Context) -> RepoEntry {
+        RepoEntry(date: Date(), repo: Repository.placeholder)
     }
     
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date())
+    func getSnapshot(in context: Context, completion: @escaping (RepoEntry) -> ()) {
+        let entry = RepoEntry(date: Date(), repo: Repository.placeholder)
         completion(entry)
     }
     
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [SimpleEntry] = []
+        var entries: [RepoEntry] = []
         
         // Generate a timeline consisting of five entries an hour apart, starting from the current date.
         let currentDate = Date()
         for hourOffset in 0 ..< 5 {
             let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate)
+            let entry = RepoEntry(date: entryDate, repo: Repository.placeholder)
             entries.append(entry)
         }
         
@@ -34,12 +34,17 @@ struct Provider: TimelineProvider {
     }
 }
 
-struct SimpleEntry: TimelineEntry {
+struct RepoEntry: TimelineEntry {
     let date: Date
+    let repo: Repository
 }
 
 struct RepoWatcherWidgetEntryView : View {
-    var entry: Provider.Entry
+    var entry: RepoEntry
+    let formatter = ISO8601DateFormatter()
+    var daysSinceLastActivity: Int {
+        calculateDaysSinceLastActivity(from: entry.repo.pushedAt)
+    }
     
     var body: some View {
         HStack {
@@ -47,16 +52,16 @@ struct RepoWatcherWidgetEntryView : View {
                 HStack {
                     Circle()
                         .frame(width: 50, height: 50)
-                    Text("Swift News")
+                    Text(entry.repo.name)
                         .font(.title2)
                         .fontWeight(.semibold)
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
                 }.padding(.bottom, 6)
                 HStack {
-                    StatLabel(value: 99, systemImageName: "star.fill")
-                    StatLabel(value: 99, systemImageName: "tuningfork")
-                    StatLabel(value: 99, systemImageName: "exclamationmark.triangle.fill")
+                    StatLabel(value: entry.repo.watchers, systemImageName: "star.fill")
+                    StatLabel(value: entry.repo.forks, systemImageName: "tuningfork")
+                    StatLabel(value: entry.repo.openIssues, systemImageName: "exclamationmark.triangle.fill")
 
                 }
             }
@@ -64,17 +69,24 @@ struct RepoWatcherWidgetEntryView : View {
             Spacer()
             
             VStack {
-                Text("99")
+                Text("\(daysSinceLastActivity)")
                     .bold()
                     .font(.system(size: 70))
                     .frame(width: 90)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
+                    .foregroundColor(daysSinceLastActivity > 50 ? .pink : .green)
                 Text("days ago")
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
         }.padding()
+    }
+    
+    func calculateDaysSinceLastActivity (from dateString: String) -> Int {
+        
+        let lastActivityDate = formatter.date(from: dateString) ?? .now
+        return Calendar.current.dateComponents([.day], from: lastActivityDate, to: .now).day ?? 0
     }
 }
 
@@ -93,7 +105,7 @@ struct RepoWatcherWidget: Widget {
 
 struct RepoWatcherWidget_Previews: PreviewProvider {
     static var previews: some View {
-        RepoWatcherWidgetEntryView(entry: SimpleEntry(date: Date()))
+        RepoWatcherWidgetEntryView(entry: RepoEntry(date: Date(), repo: Repository.placeholder))
             .previewContext(WidgetPreviewContext(family: .systemMedium))
     }
 }
