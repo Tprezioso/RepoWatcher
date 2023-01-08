@@ -21,6 +21,7 @@
 		55B2513529678CF00045364E /* Repository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B2513329678CF00045364E /* Repository.swift */; };
 		55B251372968C7E20045364E /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B251362968C7E20045364E /* NetworkManager.swift */; };
 		55B251382968C7E20045364E /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B251362968C7E20045364E /* NetworkManager.swift */; };
+		55B251412969F0600045364E /* RepoMediumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B251402969F0600045364E /* RepoMediumView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 		55B2512B296675ED0045364E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		55B2513329678CF00045364E /* Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repository.swift; sourceTree = "<group>"; };
 		55B251362968C7E20045364E /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		55B251402969F0600045364E /* RepoMediumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoMediumView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +138,7 @@
 			children = (
 				55B25125296675EB0045364E /* RepoWatcherWidgetBundle.swift */,
 				55B25127296675EB0045364E /* RepoWatcherWidget.swift */,
+				55B251402969F0600045364E /* RepoMediumView.swift */,
 				55B251362968C7E20045364E /* NetworkManager.swift */,
 				55B2513329678CF00045364E /* Repository.swift */,
 				55B25129296675ED0045364E /* Assets.xcassets */,
@@ -257,6 +260,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				55B251382968C7E20045364E /* NetworkManager.swift in Sources */,
+				55B251412969F0600045364E /* RepoMediumView.swift in Sources */,
 				55B25128296675EB0045364E /* RepoWatcherWidget.swift in Sources */,
 				55B25126296675EB0045364E /* RepoWatcherWidgetBundle.swift in Sources */,
 				55B2513529678CF00045364E /* Repository.swift in Sources */,
