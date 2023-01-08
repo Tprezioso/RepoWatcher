@@ -16,7 +16,7 @@ struct Repository {
     let openIssues: Int
     let pushedAt: String
     var avatarData: Data
-    
+    var contributors: [Contributor] = []
 }
 extension Repository {
     struct CodingData: Decodable {

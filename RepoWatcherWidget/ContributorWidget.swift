@@ -10,37 +10,69 @@ import SwiftUI
 
 struct ContributorProvider: TimelineProvider {
     func placeholder(in context: Context) -> ContributorEntry {
-        ContributorEntry(date: Date())
+        ContributorEntry(date: .now, repo: MockData.repoOne)
     }
-    
+
     func getSnapshot(in context: Context, completion: @escaping (ContributorEntry) -> Void) {
-       let entry = ContributorEntry(date: Date())
+        let entry = ContributorEntry(date: .now, repo: MockData.repoOne)
         completion(entry)
     }
-    
+
     func getTimeline(in context: Context, completion: @escaping (Timeline<ContributorEntry>) -> Void) {
-        let nextUpdate = Date() .addingTimeInterval (43200) // 12 hours in seconds
-        let entry = ContributorEntry(date: .now)
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-        completion(timeline)
+        Task {
+            let nextUpdate = Date().addingTimeInterval(43200) // 12 hours in seconds
+
+            do {
+                // Get Repo
+                let repoToShow = RepoURL.swiftNews
+                var repo = try await NetworkManager.shared.getRepo(atUrl: repoToShow)
+                let avatarImageData = await NetworkManager.shared.downloadImageData(from: repo.owner.avatarUrl)
+                repo.avatarData = avatarImageData ?? Data()
+
+                // Get Contributors
+                let contributors = try await NetworkManager.shared.getContributors(atUrl: repoToShow + "/contributors")
+
+                // Filter to just the top 4
+                var topFour = Array(contributors.prefix(4))
+
+                // Download top four avatars
+                for i in topFour.indices {
+                    let avatarData = await NetworkManager.shared.downloadImageData(from: topFour[i].avatarUrl)
+                    topFour[i].avatarData = avatarData ?? Data()
+                }
+
+                repo.contributors = topFour
+
+                // Create Entry & Timeline
+                let entry = ContributorEntry(date: .now, repo: repo)
+                let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+                completion(timeline)
+            } catch {
+                print("❌ Error - \(error.localizedDescription)")
+            }
+        }
     }
 }
 
 struct ContributorEntry: TimelineEntry {
     var date: Date
+    let repo: Repository
 }
 
-struct ContributorEntryView : View {
+struct ContributorEntryView: View {
     var entry: ContributorEntry
-    
+
     var body: some View {
-        RepoMediumView(repo: MockData.repoOne)
+        VStack {
+            RepoMediumView(repo: entry.repo)
+            ContributorMediumView(repo: entry.repo)
+        }
     }
 }
 
 struct ContributorWidget: Widget {
-    let kind: String = "ContributorRepoWidget"
-    
+    let kind: String = "ContributorWidget"
+
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ContributorProvider()) { entry in
             ContributorEntryView(entry: entry)
@@ -53,7 +85,7 @@ struct ContributorWidget: Widget {
 
 struct ContributorWidget_Previews: PreviewProvider {
     static var previews: some View {
-        ContributorEntryView(entry: ContributorEntry(date: Date()))
+        ContributorEntryView(entry: ContributorEntry(date: Date(), repo: MockData.repoOne))
             .previewContext(WidgetPreviewContext(family: .systemLarge))
     }
 }

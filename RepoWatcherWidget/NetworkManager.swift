@@ -17,7 +17,7 @@ class NetworkManager {
         
     }
     
-    func getRepo (atUrl urlString: String) async throws -> Repository {
+    func getRepo(atUrl urlString: String) async throws -> Repository {
         guard let url = URL(string: urlString) else { throw NetworkError.invalidURL }
         
         let (data, response) = try await URLSession.shared.data(from: url)
@@ -29,6 +29,23 @@ class NetworkManager {
         do {
             let codingData = try decoder.decode(Repository.CodingData.self, from: data)
             return codingData.repo
+        } catch {
+            throw NetworkError.invalidRepoData
+        }
+    }
+    
+    func getContributors(atUrl urlString: String) async throws -> [Contributor] {
+        guard let url = URL(string: urlString) else { throw NetworkError.invalidURL }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+            throw NetworkError.invalidResponse
+        }
+        
+        do {
+            let codingData = try decoder.decode([Contributor.CodingData].self, from: data)
+            return codingData.map { $0.contributor }
         } catch {
             throw NetworkError.invalidRepoData
         }
