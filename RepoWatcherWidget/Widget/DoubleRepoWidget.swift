@@ -8,29 +8,32 @@
 import WidgetKit
 import SwiftUI
 
-struct DoubleRepoProvider: TimelineProvider {
+struct DoubleRepoProvider: IntentTimelineProvider {
+    
     func placeholder(in context: Context) -> DoubleRepoEntry {
         DoubleRepoEntry(date: Date(), topRepo: MockData.repoOne, bottomRepo: MockData.repoTwo)
     }
-    
-    func getSnapshot(in context: Context, completion: @escaping (DoubleRepoEntry) -> ()) {
+
+    func getSnapshot(for configuration: SelectTwoReposIntent, in context: Context, completion: @escaping (DoubleRepoEntry) -> Void) {
         let entry = DoubleRepoEntry(date: Date(), topRepo: MockData.repoOne, bottomRepo: MockData.repoTwo)
         completion(entry)
     }
     
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+    func getTimeline(for configuration: SelectTwoReposIntent, in context: Context, completion: @escaping (Timeline<DoubleRepoEntry>) -> Void) {
         Task {
             let nextUpdate = Date().addingTimeInterval(43200) // 12 hours in seconds
             
             do {
+                let topRepoToShow = RepoURL.prefix + configuration.topRepo!
+                let bottomRepoToShow = RepoURL.prefix + configuration.bottomRepo!
                 // Get top repo
-                var repo = try await NetworkManager.shared.getRepo(atUrl: RepoURL.swiftNews)
+                var repo = try await NetworkManager.shared.getRepo(atUrl: topRepoToShow )
                 let topAvatarImageData = await NetworkManager.shared.downloadImageData(from: repo.owner.avatarUrl)
                 repo.avatarData = topAvatarImageData ?? Data()
                 
                 // Get bottom repo
                 var bottomRepo: Repository
-                bottomRepo = try await NetworkManager.shared.getRepo(atUrl: RepoURL.publish)
+                bottomRepo = try await NetworkManager.shared.getRepo(atUrl: bottomRepoToShow)
                 let bottomAvatarImageData = await NetworkManager.shared.downloadImageData(from: bottomRepo.owner.avatarUrl)
                 bottomRepo.avatarData = bottomAvatarImageData ?? Data()
                 
@@ -68,7 +71,7 @@ struct DoubleRepoWidget: Widget {
     let kind: String = "DoubleRepoWidget"
     
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: DoubleRepoProvider()) { entry in
+        IntentConfiguration(kind: kind, intent: SelectTwoReposIntent.self, provider: DoubleRepoProvider()) { entry in
             DoubleRepoEntryView(entry: entry)
         }
         .configurationDisplayName("Repo Watcher")
