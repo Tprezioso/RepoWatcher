@@ -71,7 +71,51 @@ struct SingleRepoEntryView: View {
                 RepoMediumView(repo: entry.repo)
                 ContributorMediumView(repo: entry.repo)
             }
-        case .systemSmall, .systemExtraLarge, .accessoryCircular, .accessoryRectangular, .accessoryInline:
+        case .accessoryInline:
+            Text("\(entry.repo.name) - \(entry.repo.daysSinceLastActivity) days")
+        
+        case .accessoryRectangular:
+           
+            VStack(alignment: .leading) {
+                Text(entry.repo.name)
+                    .font(.headline)
+                Text("\(entry.repo.daysSinceLastActivity) days")
+                HStack {
+                    Image(systemName: "star.fill")
+                        .resizable()
+                        .frame(width: 12, height: 12)
+                        .aspectRatio(contentMode: .fit)
+                    Text("\(entry.repo.watchers)")
+                    
+                    Image(systemName: "tuningfork")
+                        .resizable()
+                        .frame(width: 12, height: 12)
+                        .aspectRatio(contentMode: .fit)
+                    Text("\(entry.repo.forks)")
+                    
+                    if entry.repo.hasIssues {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .resizable()
+                            .frame(width: 12, height: 12)
+                            .aspectRatio(contentMode: .fit)
+                        Text("\(entry.repo.openIssues)")
+                    }
+                }.font(.caption)
+            }
+            
+            
+        case .accessoryCircular:
+            ZStack {
+                AccessoryWidgetBackground()
+                VStack {
+                    Text(entry.repo.name)
+                        .font(.headline)
+                    Text("\(entry.repo.daysSinceLastActivity)")
+                        .font(.caption)
+                }
+            }
+            
+        case .systemSmall, .systemExtraLarge:
             EmptyView()
             
         @unknown default:
@@ -90,13 +134,13 @@ struct SingleRepoWidget: Widget {
         }
         .configurationDisplayName("Single Repo")
         .description("Keep track of a single repository.")
-        .supportedFamilies([.systemMedium, .systemLarge])
+        .supportedFamilies([.systemMedium, .systemLarge, .accessoryInline, .accessoryRectangular, .accessoryCircular])
     }
 }
 
 struct SingleRepoWidget_Previews: PreviewProvider {
     static var previews: some View {
         SingleRepoEntryView(entry: SingleRepoEntry(date: Date(), repo: MockData.repoOne))
-            .previewContext(WidgetPreviewContext(family: .systemLarge))
+            .previewContext(WidgetPreviewContext(family: .accessoryRectangular))
     }
 }
